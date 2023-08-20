@@ -1,0 +1,2 @@
+class MissingScraperException(Exception):
+    pass
