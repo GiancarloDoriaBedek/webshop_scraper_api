@@ -30,8 +30,6 @@ class KonzumScraper(GenericScraper):
         product_articles = product_grid.find_all('article', class_=KonzumScraper.PRODUCT_ARTICLE_CLASS)
         products_data = list()
         for article in product_articles:
-            print(article)
-            print('*'*200)
             article_data = self.__get_product_article_data(article)
             products_data.append(article_data)
 
@@ -87,7 +85,7 @@ class KonzumScraper(GenericScraper):
                 continue
 
             page_number = page_link.get_text(strip=True)
-            page_href = page_link.get('href')
+            page_href = self._generate_link(KonzumScraper.HOMEPAGE, page_link.get('href'))
 
             page_data = {
                 Param.PAGE_NUMBER.value: page_number, 
@@ -100,49 +98,70 @@ class KonzumScraper(GenericScraper):
     #private_methods
     
     def __get_product_article_data(self, article: PageElement):
-
         product_data_div: PageElement = article.find('div')
 
         # Product name
         product_name = product_data_div.get('data-ga-name')
 
-        product_price_element = product_data_div.get('data-ga-price')
-        product_price = self.__parse_price(product_price_element)
+        # Product native ID
+        product_native_ID = product_data_div.get('data-ga-id')
 
+        # Product brand
         product_brand = product_data_div.get('data-ga-brand')
 
-        product_currency_element = product_data_div.get('data-ga-currency')
-        product_currency = self.__parse_currency(product_currency_element)
+        # Product price
+        product_price_element = product_data_div.get('data-ga-price')
+        print(product_price_element)
+        product_price_element = str(product_price_element).split(' ')[0]
+        print(product_price_element)
+        product_price = self._parse_price(product_price_element)
 
-        product_data[Param.PRODUCT_NAME.value] = product_data_div.get('data-ga-name')
+        # Product currency
+        product_currency_element = product_data_div.get('data-ga-currency')
+        product_currency = self._parse_currency(product_currency_element)
+
+        # Product price start date
+        # Product price end date
 
         # Product URL
-        product_anchor = article.find('a', class_=KonzumScraper.PRODUCT_LINK_CLASS)
-        product_url = product_anchor.get('href')
-        product_data[Param.PRODUCT_URL.value] = product_url
+        product_image_div = article.find('div', class_='product-default__image')
+        product_anchor = product_image_div.find('a', class_=KonzumScraper.PRODUCT_LINK_CLASS)
+        product_url = self._generate_link(KonzumScraper.HOMEPAGE, product_anchor.get('href'))
 
         # Product image URL
         product_image= product_anchor.find('img')
         product_image_url = product_image['src']
-        product_data[Param.PRODUCT_IMAGE_URL.value] = product_image_url
+
+        # Product price per unit / Product unit of measurement
+        product_meta_details_div = article.find('div', class_='product-default__meta-details')
+        price_element = product_meta_details_div.find('strong').text
+        price_value, per_unit = price_element.split(' ')
+        price_per_unit = self._parse_price(price_value)
+        unit_of_measurement = self._parse_unit_of_measurement(per_unit)
+
+        # Product package quantity
+        product_package_quantity = product_price / price_per_unit
+
+        # Product package unit of measurement
+        product_package_unit = self._get_package_unit_of_measurement(product_package_quantity, unit_of_measurement)
+
+        if unit_of_measurement != product_package_unit:
+            product_package_quantity = self._adjust_quantity_to_new_unit(product_package_quantity)
 
         product_data = {
-            Param.PRODUCT_NAME.value: self.__empty_str_if_none(product_name),
-            Param.PRODUCT_PRICE.value: self.__empty_str_if_none(product_price),
-            Param.PRODUCT_PRICE_DATE_START: "",
-            Param.PRODUCT_PRICE_DATE_END: "",
-            Param.PRODUCT_URL: "",
-            Param.PRODUCT_IMAGE_URL: ","
+            Param.PRODUCT_NAME.value: self._empty_str_if_none(product_name),
+            Param.PRODUCT_NATIVE_ID.value:  self._empty_str_if_none(product_native_ID),
+            Param.PRODUCT_BRAND.value: self._empty_str_if_none(product_brand),
+            Param.PRODUCT_PRICE.value: self._empty_str_if_none(product_price),
+            Param.PRODUCT_CURRENCY.value: self._empty_str_if_none(product_currency),
+            Param.PRODUCT_PRICE_DATE_START.value: "",
+            Param.PRODUCT_PRICE_DATE_END.value: "",
+            Param.PRODUCT_URL.value: self._empty_str_if_none(product_url),
+            Param.PRODUCT_IMAGE_URL.value: self._empty_str_if_none(product_image_url),
+            Param.PRODUCT_UNIT_OF_MEASUREMENT.value: unit_of_measurement.value,
+            Param.PRODUCT_PRICE_PER_UNIT_OF_MEASUREMENT.value: self._empty_str_if_none(price_per_unit),
+            Param.PRODUCT_PACKAGE_QUANTITY.value: product_package_quantity,
+            Param.PRODUCT_PACKAGE_UNIT_OF_MEASUREMENT.value: product_package_unit.value
         }
 
-
-
-        # Product price
-
-        # Product unit
-
-        # Product price per unit 02398939
         return product_data
-
-
-
