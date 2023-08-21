@@ -111,9 +111,7 @@ class KonzumScraper(GenericScraper):
 
         # Product price
         product_price_element = product_data_div.get('data-ga-price')
-        print(product_price_element)
         product_price_element = str(product_price_element).split(' ')[0]
-        print(product_price_element)
         product_price = self._parse_price(product_price_element)
 
         # Product currency
