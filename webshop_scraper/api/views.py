@@ -32,7 +32,7 @@ def api_home(request, *args, **kwargs):
     return Response(data)
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 def get_product_categories(request, *args, **kwargs):
     body = request.body
     try:
@@ -53,7 +53,7 @@ def get_product(request, *args, **kwargs):
     pass
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 def get_products(request, *args, **kwargs):
     body = request.body
     try:
@@ -87,7 +87,7 @@ def get_store_info(request, *args, **kwargs):
 
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 def get_pages(request, *args, **kwargs):
     body = request.body
     try:

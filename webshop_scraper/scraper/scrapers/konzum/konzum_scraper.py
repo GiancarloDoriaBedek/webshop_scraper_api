@@ -59,7 +59,7 @@ class KonzumScraper(GenericScraper):
                 continue
 
             text = anchor.get_text(strip=True)
-            link = anchor.get('href')
+            link = self._generate_link(KonzumScraper.HOMEPAGE, anchor.get('href'))
 
             category_data = {
                 Param.CATEGORY_NAME.value: text, 
@@ -76,6 +76,15 @@ class KonzumScraper(GenericScraper):
 
         pagination_ul = soup.find('ul', class_=KonzumScraper.PAGINATION_CLASS)
         pagination_data = list()
+
+        # Handle categories with one page of data
+        if pagination_ul is None:
+            pagination_data.append({
+                Param.PAGE_NUMBER.value: 1, 
+                Param.PAGE_LINK.value: category_link})
+            
+            return pagination_data
+        
         li_elements = pagination_ul.find_all('li')
 
         # Iterate through li elements
