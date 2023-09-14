@@ -13,6 +13,7 @@ class Param(Enum):
     PRODUCT_BRAND = 'ProductBrand'
     PRODUCT_PRICE = 'ProductPrice'
     PRODUCT_CURRENCY = 'ProductCurrency'
+    PRODUCT_PRICE_DATE = 'PriceDate'
     PRODUCT_PRICE_DATE_START = 'ProductPriceStartDate'
     PRODUCT_PRICE_DATE_END = 'ProductPriceEndDate'
     PRODUCT_URL = 'ProductURL'

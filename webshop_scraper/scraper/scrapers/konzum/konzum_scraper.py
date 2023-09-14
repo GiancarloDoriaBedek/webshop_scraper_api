@@ -1,3 +1,5 @@
+import datetime
+
 from ..generics.generic_scraper import GenericScraper
 from ..parameters import Param
 import requests
@@ -27,6 +29,9 @@ class KonzumScraper(GenericScraper):
         soup = self.cook_soup(page_link)
 
         product_grid = soup.find('div', class_= KonzumScraper.PRODUCT_LIST_CLASS)
+        if product_grid == None:
+            return
+        
         product_articles = product_grid.find_all('article', class_=KonzumScraper.PRODUCT_ARTICLE_CLASS)
         products_data = list()
         for article in product_articles:
@@ -122,7 +127,8 @@ class KonzumScraper(GenericScraper):
         product_price_element = product_data_div.get('data-ga-price')
         product_price_element = str(product_price_element).split(' ')[0]
         product_price = self._parse_price(product_price_element)
-
+        if product_price is None:
+            return
         # Product currency
         product_currency_element = product_data_div.get('data-ga-currency')
         product_currency = self._parse_currency(product_currency_element)
@@ -142,8 +148,10 @@ class KonzumScraper(GenericScraper):
         # Product price per unit / Product unit of measurement
         product_meta_details_div = article.find('div', class_='product-default__meta-details')
         price_element = product_meta_details_div.find('strong').text
-        price_value, per_unit = price_element.split(' ')
+        price_value, per_unit, *rest = price_element.split(' ')
         price_per_unit = self._parse_price(price_value)
+        if price_per_unit is None:
+            return
         unit_of_measurement = self._parse_unit_of_measurement(per_unit)
 
         # Product package quantity
@@ -161,6 +169,7 @@ class KonzumScraper(GenericScraper):
             Param.PRODUCT_BRAND.value: self._empty_str_if_none(product_brand),
             Param.PRODUCT_PRICE.value: self._empty_str_if_none(product_price),
             Param.PRODUCT_CURRENCY.value: self._empty_str_if_none(product_currency),
+            Param.PRODUCT_PRICE_DATE.value: datetime.datetime.now(),
             Param.PRODUCT_PRICE_DATE_START.value: "",
             Param.PRODUCT_PRICE_DATE_END.value: "",
             Param.PRODUCT_URL.value: self._empty_str_if_none(product_url),
@@ -168,7 +177,8 @@ class KonzumScraper(GenericScraper):
             Param.PRODUCT_UNIT_OF_MEASUREMENT.value: unit_of_measurement.value,
             Param.PRODUCT_PRICE_PER_UNIT_OF_MEASUREMENT.value: self._empty_str_if_none(price_per_unit),
             Param.PRODUCT_PACKAGE_QUANTITY.value: product_package_quantity,
-            Param.PRODUCT_PACKAGE_UNIT_OF_MEASUREMENT.value: product_package_unit.value
+            Param.PRODUCT_PACKAGE_UNIT_OF_MEASUREMENT.value: product_package_unit.value,
+            Param.WEBSITE.value: 'Konzum'
         }
 
         return product_data

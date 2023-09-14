@@ -64,7 +64,10 @@ class GenericScraper(ABC):
 
     def _parse_price(self, value: str):
         if '.' not in value and ',' not in value:
-            return float(value)
+            try:
+                return float(value)
+            except ValueError:
+                return
 
         elif value[-3] in ',.':
             dec_char = value[-3]

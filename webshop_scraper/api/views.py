@@ -2,6 +2,8 @@ import json
 from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from asgiref.sync import sync_to_async
+import asyncio
 
 from scraper.scrapers.scraper_factory import ScraperFactory
 from scraper.scrapers.webshops import Webshop
@@ -11,7 +13,7 @@ from .helpers.parameter_parser import Param
 from .helpers.api_functions.api_function_factory import api_factory, ApiFunction
 
 
-
+@sync_to_async
 @api_view(["GET"])
 def api_home(request, *args, **kwargs):
     """
@@ -31,7 +33,7 @@ def api_home(request, *args, **kwargs):
     print(body)
     return Response(data)
 
-
+@sync_to_async
 @api_view(["POST"])
 def get_product_categories(request, *args, **kwargs):
     body = request.body
@@ -47,12 +49,12 @@ def get_product_categories(request, *args, **kwargs):
     
     return Response(function.scraped_data, content_type='application/json')
 
-
+@sync_to_async
 @api_view(["GET"])
 def get_product(request, *args, **kwargs):
     pass
 
-
+@sync_to_async
 @api_view(["POST"])
 def get_products(request, *args, **kwargs):
     body = request.body
@@ -68,7 +70,7 @@ def get_products(request, *args, **kwargs):
     
     return Response(function.scraped_data, content_type='application/json')
 
-
+@sync_to_async
 @api_view(["GET"])
 def get_store_info(request, *args, **kwargs):
     body = request.body
@@ -86,7 +88,7 @@ def get_store_info(request, *args, **kwargs):
 
 
 
-
+@sync_to_async
 @api_view(["POST"])
 def get_pages(request, *args, **kwargs):
     body = request.body
